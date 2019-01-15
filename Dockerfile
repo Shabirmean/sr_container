@@ -24,6 +24,8 @@ RUN apt-get install -y 	gcc \
 			debootstrap \
 			psmisc \
 			uidmap \
+			iproute2 \
+			iptables \
 			&& apt-get clean
 
 #RUN useradd -m comp310-user && echo "comp310-user:comp310" | chpasswd && adduser comp310-user sudo
@@ -37,7 +39,7 @@ ENTRYPOINT ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
 #	          (Give it a meaningful name)
 # --------------------------------------------------------------
 # docker run --privileged -d --rm --name=<MEANINGFUL_NAME> smean_image_comp310
-# eg: docker run --privileged -d --rm --name=shabirmean smean_image_comp310
+# eg: docker run --privileged -d --rm -v `pwd`:/home --name=shabirmean smean_image_comp310
 
 # --------------------------------------------------------------
 #             Get inside your container as follows

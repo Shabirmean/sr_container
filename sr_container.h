@@ -2,7 +2,7 @@
  *  @title      :   sr_container.h
  *  @author     :   Shabir Abdul Samadh (shabirmean@cs.mcgill.ca)
  *  @purpose    :   COMP310/ECSE427 Operating Systems (Assingment 3) - Phase 2
- *  @description:   Header file for the template C code of A3
+ *  @description:   Header file for the template C code of A3.
 */
 
 #ifndef __SRCONTAINER__
