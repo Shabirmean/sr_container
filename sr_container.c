@@ -330,10 +330,11 @@ int main(int argc, char **argv)
 		| CLONE_NEWCGROUP
 		| CLONE_NEWPID
 		| CLONE_NEWIPC
-		| CLONE_NEWNET
+		// | CLONE_NEWNET
 		| CLONE_NEWUTS;
 
-        
+    fprintf(stderr, "successfully setup child mounts.\n");
+
 	if ((child_pid = clone(child_function, stack + STACK_SIZE, flags | SIGCHLD, &config)) == -1) {
 		fprintf(stderr, "=> clone failed! %m\n");
         return EXIT_FAILURE;

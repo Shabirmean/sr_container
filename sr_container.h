@@ -40,7 +40,8 @@
 #define PIDS "64"                   // default pids limit on the pid cgroup controller
 #define WEIGHT "10"                 // default weight limit on the block IO cgroup controller
 #define FD_COUNT 64                 // default FD_COUNT
-#define USERNS_OFFSET 10000         // default UID offset from the parent USER namespaces
+//#define USERNS_OFFSET 10000         // default UID offset from the parent USER namespaces
+#define USERNS_OFFSET 0         // default UID offset from the parent USER namespaces
 #define USERNS_COUNT 2000           // default users count in the new USER namespace
 #define SCMP_FAIL SCMP_ACT_ERRNO(EPERM) // Seccomp rule to set errno to EPERM on matchin filter
 #define STACK_SIZE (1024 * 1024)    // Stack size for the cloned child
