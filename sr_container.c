@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     struct child_config config = {0};
     int option = 0;
     int sockets[2] = {0};
-    pid_t child_pid = 0;
+    //pid_t child_pid = 0;
     int last_optind = 0;
     bool found_cflag = false;
 
@@ -307,17 +307,7 @@ int main(int argc, char **argv)
         cleanup_sockets(sockets);
         return EXIT_FAILURE;
     }
-
-    /**
-     * Create the network namespace directory under /var/run/netns
-     **/
-    if (create_netns_dir(config))
-    {
-        clean_child_structures(&config, cgroups, NULL);
-        cleanup_sockets(sockets);
-        return EXIT_FAILURE;
-    }
-
+    
     /**
      * ------------------------ TODO ------------------------
      * Setup a stack and create a new child process using the clone() system call
@@ -345,7 +335,7 @@ int main(int argc, char **argv)
 
     fprintf(stderr, "successfully setup child mounts.\n");
 
-	if ((child_pid = clone(child_function, stack + STACK_SIZE, flags | SIGCHLD, &config)) == -1) {
+	if ((config.child_pid = clone(child_function, stack + STACK_SIZE, flags | SIGCHLD, &config)) == -1) {
 		fprintf(stderr, "=> clone failed! %m\n");
         return EXIT_FAILURE;
 	}
@@ -353,7 +343,7 @@ int main(int argc, char **argv)
     /**
      *  ------------------------------------------------------
      **/ 
-    if (child_pid == -1)
+    if (config.child_pid == -1)
     {
         fprintf(stderr, "==> child creation failed! %m\n");
         clean_child_structures(&config, cgroups, stack);
@@ -363,14 +353,14 @@ int main(int argc, char **argv)
     close(sockets[1]);
     sockets[1] = 0;
 
-    if (setup_child_uid_map(child_pid, sockets[0]))
+    if (setup_child_uid_map(&config, sockets[0]))
     {
-        if (child_pid)
-            kill(child_pid, SIGKILL);
+        if (config.child_pid)
+            kill(config.child_pid, SIGKILL);
     }
 
     int child_status = 0;
-    waitpid(child_pid, &child_status, 0);
+    waitpid(config.child_pid, &child_status, 0);
     int exit_status = WEXITSTATUS(child_status);
 
     clean_child_structures(&config, cgroups, stack);
@@ -385,7 +375,6 @@ int child_function(void *arg)
     if (sethostname(config->hostname, strlen(config->hostname)) || \
                 setup_child_mounts(config) || \
                 setup_child_userns(config) || \
-                setup_child_netns(config)  || \
                 setup_child_capabilities() || \
                 setup_syscall_filters()
         )

@@ -296,8 +296,9 @@ int free_cgroup_controls(struct child_config *config, struct cgroups_control **c
     return 0;
 }
 
-int setup_child_uid_map(pid_t child_pid, int fd)
-{
+int setup_child_uid_map(struct child_config *config, int fd)
+{   
+    pid_t child_pid = config->child_pid;
     int uid_map = 0;
     int has_userns = -1;
     if (read(fd, &has_userns, sizeof(has_userns)) != sizeof(has_userns))
@@ -330,6 +331,13 @@ int setup_child_uid_map(pid_t child_pid, int fd)
             close(uid_map);
         }
     }
+
+/** 
+ * Mount the child net namespace before allowing the child to continue
+ **/
+    setup_child_netns(config);
+//--------------------------------------------------------------------
+
     if (write(fd, &(int){0}, sizeof(int)) != sizeof(int))
     {
         fprintf(stderr, "write() failed inside child: %m\n");
@@ -340,8 +348,8 @@ int setup_child_uid_map(pid_t child_pid, int fd)
 
 int setup_child_userns(struct child_config *config)
 {
-    fprintf(stderr, "####### > attempting a new user namespace...");
-    int has_userns = !unshare(CLONE_NEWUSER);
+    fprintf(stderr, "####### > attempting a new user & network namespace...");
+    int has_userns = !unshare(CLONE_NEWUSER | CLONE_NEWNET);
     if (write(config->fd, &has_userns, sizeof(has_userns)) != sizeof(has_userns))
     {
         fprintf(stderr, "write() inside child failed: %m\n");
@@ -375,38 +383,25 @@ int setup_child_userns(struct child_config *config)
     return 0;
 }
 
-int create_netns_dir(struct child_config *config)
+int setup_child_netns(struct child_config *config)
 {
-    char netns_path[MAXPATHLEN];
+    char global_netns_path[MAXPATHLEN];
+    char child_netns_path[MAXPATHLEN];
     const char* netns_name = config->hostname;
 
-    snprintf(netns_path, sizeof(netns_path), "%s/%s", NETNS_RUN_DIR, netns_name);
+    snprintf(global_netns_path, sizeof(global_netns_path), "%s/%s", NETNS_RUN_DIR, netns_name);
+    snprintf(child_netns_path, sizeof(child_netns_path), "/proc/%s/ns/net", config->child_pid);
     mkdir(NETNS_RUN_DIR, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
 
-    fd = open(netns_path, O_RDONLY|O_CREAT|O_EXCL, 0);
+    int fd = open(global_netns_path, O_RDONLY|O_CREAT|O_EXCL, 0);
 	if (fd < 0) {
-		fprintf(stderr, "Could not create %s: %s\n", netns_path, strerror(errno));
+		fprintf(stderr, "Could not create %s: %s\n", global_netns_path, strerror(errno));
 		return -1;
 	}
     close(fd);
-    return 0;
-}
 
-
-int setup_child_netns(struct child_config *config)
-{
-    char netns_path[MAXPATHLEN];
-    const char* netns_name = config->hostname;
-    snprintf(netns_path, sizeof(netns_path), "%s/%s", NETNS_RUN_DIR, netns_name);
-
-    if (unshare(CLONE_NEWNET) < 0) {
-		fprintf(stderr, "Failed to create a new network namespace: %s\n", strerror(errno));
-		delete_child_netns(config);
-        return -1;
-	}
-
-    if (mount("/proc/self/ns/net", netns_path, "none", MS_BIND, NULL) < 0) {
-		fprintf(stderr, "Bind /proc/self/ns/net -> %s failed: %s\n", netns_path, strerror(errno));
+    if (mount(child_netns_path, global_netns_path, "none", MS_BIND, NULL) < 0) {
+		fprintf(stderr, "Bind %s -> %s failed: %s\n", child_netns_path, global_netns_path, strerror(errno));
 		delete_child_netns(config);
         return -1;
 	}
