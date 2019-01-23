@@ -46,7 +46,6 @@
 #define SCMP_FAIL SCMP_ACT_ERRNO(EPERM) // Seccomp rule to set errno to EPERM on matchin filter
 #define STACK_SIZE (1024 * 1024)    // Stack size for the cloned child
 
-
 /**
  *  Set of CGROUPS-Controllers that must be set
  **/
@@ -55,6 +54,17 @@
 #define CGRP_CPU_SET_CONTROL "cpuset"
 #define CGRP_PIDS_CONTROL "pids"
 #define CGRP_BLKIO_CONTROL "blkio"
+
+
+#define NETNS_RUN_DIR "/var/run/netns"
+#define	MAXPATHLEN 1024
+#ifndef CLONE_NEWNET
+    #define CLONE_NEWNET 0x40000000	/* New network namespace (lo, device, names sockets, etc) */
+#endif
+
+#ifndef MNT_DETACH
+    #define MNT_DETACH	0x00000002	/* Just detach from the tree */
+#endif /* MNT_DETACH */
 
 /**
  *  Struct to hold configurations related to the child process that 
@@ -90,11 +100,15 @@ int setup_cgroup_controls(struct child_config *config, struct cgroups_control **
 int free_cgroup_controls(struct child_config *config, struct cgroups_control **cgrps);
 int setup_child_uid_map(pid_t child_pid, int fd);
 int setup_child_userns(struct child_config *config);
+int create_netns_dir(struct child_config *config);
+int setup_child_netns(struct child_config *config);
+
 int choose_child_hostname(char *buff, size_t len);
 
 void clean_child_structures(struct child_config *config, struct cgroups_control **cgrps, char *child_stack);
 void cleanup_stuff(char *argv[], int sockets[2]);
 void print_usage(char *argv[]);
 void cleanup_sockets(int sockets[2]);
+void netns_delete(struct child_config *config);
 
 #endif 

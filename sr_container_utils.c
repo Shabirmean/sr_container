@@ -10,6 +10,7 @@
 void clean_child_structures(struct child_config *config, struct cgroups_control **cgrps, char *child_stack){
     free_cgroup_controls(config, cgrps);
     free(child_stack);
+    delete_child_netns(config);
 }
 
 void cleanup_stuff(char *argv[], int sockets[2]) {
@@ -31,3 +32,13 @@ void cleanup_sockets(int sockets[2]) {
     }
 }
 
+void delete_child_netns(struct child_config *config){
+    const char *name;
+	char netns_path[MAXPATHLEN];
+    const char* netns_name = config->hostname;
+	snprintf(netns_path, sizeof(netns_path), "%s/%s", NETNS_RUN_DIR, netns_name);
+	umount2(netns_path, MNT_DETACH);
+	if (unlink(netns_path) < 0) {
+		fprintf(stderr, "Cannot remove %s: %s\n", netns_path, strerror(errno));
+	}
+}

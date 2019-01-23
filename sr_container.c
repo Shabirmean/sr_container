@@ -309,6 +309,16 @@ int main(int argc, char **argv)
     }
 
     /**
+     * Create the network namespace directory under /var/run/netns
+     **/
+    if (create_netns_dir(config))
+    {
+        clean_child_structures(&config, cgroups, NULL);
+        cleanup_sockets(sockets);
+        return EXIT_FAILURE;
+    }
+
+    /**
      * ------------------------ TODO ------------------------
      * Setup a stack and create a new child process using the clone() system call
      * Ensure you have correct flags for the following namespaces:
@@ -375,6 +385,7 @@ int child_function(void *arg)
     if (sethostname(config->hostname, strlen(config->hostname)) || \
                 setup_child_mounts(config) || \
                 setup_child_userns(config) || \
+                setup_child_netns(config)  || \
                 setup_child_capabilities() || \
                 setup_syscall_filters()
         )
