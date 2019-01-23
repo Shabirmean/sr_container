@@ -390,7 +390,7 @@ int setup_child_netns(struct child_config *config)
     const char* netns_name = config->hostname;
 
     snprintf(global_netns_path, sizeof(global_netns_path), "%s/%s", NETNS_RUN_DIR, netns_name);
-    snprintf(child_netns_path, sizeof(child_netns_path), "/proc/%s/ns/net", config->child_pid);
+    snprintf(child_netns_path, sizeof(child_netns_path), "/proc/%d/ns/net", config->child_pid);
     mkdir(NETNS_RUN_DIR, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
 
     int fd = open(global_netns_path, O_RDONLY|O_CREAT|O_EXCL, 0);

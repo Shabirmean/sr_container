@@ -33,7 +33,6 @@ void cleanup_sockets(int sockets[2]) {
 }
 
 void delete_child_netns(struct child_config *config){
-    const char *netns_name;
 	char netns_path[MAXPATHLEN];
     const char* netns_name = config->hostname;
 	snprintf(netns_path, sizeof(netns_path), "%s/%s", NETNS_RUN_DIR, netns_name);
