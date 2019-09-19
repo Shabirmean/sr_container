@@ -3,7 +3,7 @@ LABEL 	Author="Shabirmean" \
       	Email="shabirmean@cs.mcgill.ca" \
       	Institution="McGill University" \
       	Department="School of Computer Science (SOCS)" \
-      	Description="Dockerfile to provide execution environment for COMP310 Assignment-3 (Fall-2018 : Prof. M.Maheshwaran)" \
+      	Description="Dockerfile 2 provide execution environment for COMP310 Assignment-3 (Fall-2018 : Prof. M.Maheshwaran)" \
 	Date="15th Nov 2018"
 
 RUN apt-get update
