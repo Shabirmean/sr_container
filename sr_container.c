@@ -1,6 +1,6 @@
 /**
  *  @title      :   sr_container.c
- *  @author     :   Shabir Abdul Samadh (shabirmean@cs.mcgill.ca)
+ *  @author     :   Shabir Abdul Samadh (shabirmean@cs.mcgill.ca/shabir_tck@hotmail.com)
  *  @date       :   20th Nov 2018
  *  @purpose    :   COMP310/ECSE427 Operating Systems (Assingment 3) - Phase 2
  *  @description:   A template C code to be filled in order to spawn container instances
